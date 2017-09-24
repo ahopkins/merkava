@@ -1,1 +1,8 @@
-wheel>=0.22
+aiofiles==0.3.1
+asynccli==0.1.3
+httptools==0.0.9
+msgpack-python==0.4.8
+sanic==0.6.0
+ujson==1.35
+uvloop==0.8.1
+websockets==3.4
