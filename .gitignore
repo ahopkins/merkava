@@ -44,4 +44,4 @@ docs/_build
 
 # AMH
 .pyirc
-.mrkv
+*.mrkv
