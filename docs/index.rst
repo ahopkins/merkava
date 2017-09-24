@@ -24,4 +24,4 @@ If you have any suggestions or questions about **MerkavaDB** feel free to email 
 at admhpkns@gmail.com.
 
 If you encounter any errors or problems with **MerkavaDB**, please let me know!
-Open an Issue at the GitHub http://github.com/ahopkins/merkava main repository.
+Open an Issue at the GitHub https://github.com/ahopkins/merkava main repository.
