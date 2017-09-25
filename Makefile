@@ -1,4 +1,4 @@
-.PHONY: help bump clean clean-pyc clean-build dev list test test-all coverage docs release sdist
+.PHONY: help bump clean clean-pyc clean-build dev list history history-update test test-all coverage docs release sdist
 
 help:
 	@echo "bump - bump the version number, commit, and tag, ex make bump part=minor"
@@ -6,6 +6,8 @@ help:
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "dev - load the development server"
 	@echo "lint - check style with flake8"
+	@echo "history - add item to the HISTORY.rst, ex make history h='foo bar'"
+	@echo "history-update - update HISTORY.rst, ex make history-update v=1.0.0"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
@@ -14,7 +16,7 @@ help:
 	@echo "sdist - package"
 
 bump:
-	bumpversion $(part) --verbose -n
+	bumpversion $(part) --verbose
 
 clean: clean-build clean-pyc
 
