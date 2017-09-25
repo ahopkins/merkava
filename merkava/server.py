@@ -22,7 +22,7 @@ service.blueprint(blueprints.bp)
 async def get_config(app, loop):
     if len(sys.argv) > 1:
         path = sys.argv[1]
-        if os.path.isdir(path):
+        if os.path.isfile(path):
             config = configparser.ConfigParser()
             config.read(path)
             app.config.update(config['Storage'])
