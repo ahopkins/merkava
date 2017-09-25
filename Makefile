@@ -7,7 +7,7 @@ help:
 	@echo "dev - load the development server"
 	@echo "lint - check style with flake8"
 	@echo "history - add item to the HISTORY.rst, ex make history h='foo bar'"
-	@echo "history-update - update HISTORY.rst, ex make history-update v=1.0.0"
+	@echo "history-update - update HISTORY.rst, ex make history-update"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
@@ -32,6 +32,12 @@ clean-pyc:
 
 dev:
 	./merkava/merkava.sh ../example/config.ini
+
+history:
+	pyhi add $(h)
+
+history-update:
+	python setup.py -V | pyhi update
 
 lint:
 	flake8 merkava test
