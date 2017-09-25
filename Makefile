@@ -23,6 +23,9 @@ clean-pyc:
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 
+dev:
+	./merkava/merkava.sh ../example/config.ini
+
 lint:
 	flake8 merkava test
 

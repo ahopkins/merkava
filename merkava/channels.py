@@ -56,8 +56,7 @@ class Channel(object):
         file_path = self._build_path(id)
         if not os.path.exists(file_path):
             return 404, None
-        with open(file_path, 'rb') as store:
-            data = msgpack.load(store)
+        data = self._load(file_path)
         return 200, data
 
     def update(self, id, raw):

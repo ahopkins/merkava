@@ -1,7 +1,9 @@
-from sanic import Sanic
 import configparser
 import sys
-import blueprints
+import os
+
+from merkava import blueprints
+from sanic import Sanic
 
 
 # from aoiklivereload import LiveReloader
@@ -18,11 +20,12 @@ service.blueprint(blueprints.bp)
 
 @service.listener('before_server_start')
 async def get_config(app, loop):
-    if len(sys.argv) > 0:
+    if len(sys.argv) > 1:
         path = sys.argv[1]
-        config = configparser.ConfigParser()
-        config.read(path)
-        app.config.update(config['Storage'])
+        if os.path.isdir(path):
+            config = configparser.ConfigParser()
+            config.read(path)
+            app.config.update(config['Storage'])
 
 
 if __name__ == '__main__':

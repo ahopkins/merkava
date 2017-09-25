@@ -1,5 +1,5 @@
 from sanic import views, response
-from channel import Channel
+from merkava.channels import Channel
 
 
 class BaseChannelView(views.HTTPMethodView):

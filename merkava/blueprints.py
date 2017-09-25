@@ -1,5 +1,5 @@
 from sanic import Blueprint
-import views
+from merkava import views
 
 
 bp = Blueprint('channels', url_prefix='/v1/<channel>')

@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-python ./merkava.py $1
+/home/adam/.virtualenvs/merkava/bin/python /home/adam/Projects/merkava/package/merkava/server.py $1
