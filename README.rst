@@ -8,7 +8,7 @@ MerkavaDB
 .. image:: https://travis-ci.org/ahopkins/merkava.png?branch=master
     :target: https://travis-ci.org/ahopkins/merkava
 
-A fast ordered NoSQL database.
+A fast ordered NoSQL database. `Documentation <http://merkava.readthedocs.io/en/latest/>`_
 
 .. note::
     This is still in **active** development. Things will change. If you are interested in helping out, or would like to see any particular features added, let me know.
@@ -65,8 +65,11 @@ Roadmap
 -------
 
 - Drivers for: Python, NodeJS, Java
+- Test coverage
 - Documentation
 - Clean up utilities
 - User interface
 - Debian installer
 - Single script installer
+- Configuration options
+- Examples
