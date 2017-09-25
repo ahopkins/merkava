@@ -42,9 +42,10 @@ What kind of data?
 - integers
 - floats
 - strings
-- binary data
 - arrays/lists
 - maps/dicts
+
+Basically anything you would pass by JSON.
 
 What is a channel?
 ++++++++++++++++++
@@ -73,3 +74,7 @@ Roadmap
 - Single script installer
 - Configuration options
 - Examples
+
+Current Version
+---------------
+version 0.1.0
