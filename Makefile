@@ -37,7 +37,7 @@ history:
 	pyhi add $(h)
 
 history-update:
-	python setup.py -V | pyhi update
+	V=$(python setup.py -V); pyhi update $V
 
 lint:
 	flake8 merkava test
