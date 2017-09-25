@@ -8,7 +8,9 @@ MerkavaDB
 .. image:: https://travis-ci.org/ahopkins/merkava.png?branch=master
     :target: https://travis-ci.org/ahopkins/merkava
 
-A fast ordered NoSQL database. `Documentation <http://merkava.readthedocs.io/en/latest/>`_
+A fast ordered NoSQL database.
+
+`Documentation <http://merkava.readthedocs.io/en/latest/>`_ | `GitHub <https://github.com/ahopkins/merkava>`_
 
 .. note::
     This is still in **active** development. Things will change. If you are interested in helping out, or would like to see any particular features added, let me know.
