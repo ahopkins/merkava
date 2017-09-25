@@ -1,8 +1,10 @@
-.PHONY: help clean clean-pyc clean-build list test test-all coverage docs release sdist
+.PHONY: help bump clean clean-pyc clean-build dev list test test-all coverage docs release sdist
 
 help:
+	@echo "bump - bump the version number, commit, and tag, ex make bump minor"
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
+	@echo "dev - load the development server"
 	@echo "lint - check style with flake8"
 	@echo "test - run tests quickly with the default Python"
 	@echo "test-all - run tests on every Python version with tox"
@@ -10,6 +12,9 @@ help:
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
 	@echo "sdist - package"
+
+bump:
+	bumpversion $(part) --verbose -n
 
 clean: clean-build clean-pyc
 
