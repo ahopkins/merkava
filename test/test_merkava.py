@@ -22,10 +22,11 @@ class TestMerkava(object):
         })
 
         folder = service.config.get('path')
-        for file in os.listdir(folder):
-            file_path = os.path.join(folder, file)
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
+        if os.path.exists(folder):
+            for file in os.listdir(folder):
+                file_path = os.path.join(folder, file)
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
 
     def url(self, *args):
         url = os.path.join('/', 'v1', 'text_channel', *args)
