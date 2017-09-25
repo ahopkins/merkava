@@ -34,7 +34,7 @@ dev:
 	./merkava/merkava.sh ../example/config.ini
 
 history:
-	pyhi add $(h)
+	pyhi add "$(h)"
 
 history-update:
 	V=$(python setup.py -V); pyhi update $V
