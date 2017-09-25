@@ -1,7 +1,7 @@
 .PHONY: help bump clean clean-pyc clean-build dev list test test-all coverage docs release sdist
 
 help:
-	@echo "bump - bump the version number, commit, and tag, ex make bump minor"
+	@echo "bump - bump the version number, commit, and tag, ex make bump part=minor"
 	@echo "clean-build - remove build artifacts"
 	@echo "clean-pyc - remove Python file artifacts"
 	@echo "dev - load the development server"
