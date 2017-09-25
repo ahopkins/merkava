@@ -23,7 +23,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='merkava',
-    version='0.1.0',
+    version='0.1.1',
     description='A fast ordered NoSQL database.',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Adam Hopkins',
