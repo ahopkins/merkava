@@ -8,6 +8,10 @@ MerkavaDB
 .. image:: https://travis-ci.org/ahopkins/merkava.png?branch=master
     :target: https://travis-ci.org/ahopkins/merkava
 
+.. image:: https://readthedocs.org/projects/merkava/badge/?version=latest
+    :target: http://merkava.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 A fast ordered NoSQL database.
 
 `Documentation <http://merkava.readthedocs.io/en/latest/>`_ | `GitHub <https://github.com/ahopkins/merkava>`_
@@ -76,6 +80,7 @@ Roadmap
 - Single script installer
 - Configuration options
 - Examples
+- Logging
 
 Current Version
 ---------------

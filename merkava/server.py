@@ -5,14 +5,10 @@ import os
 from merkava import blueprints
 from sanic import Sanic
 
-
-# from aoiklivereload import LiveReloader
-# try:
-#     reloader = LiveReloader()
-#     reloader.start_watcher_thread()
-# except Exception:
-#     pass
-
+if os.environ.get('DEVELOPMENT') == 'true':  # pragma: no cover
+    from aoiklivereload import LiveReloader
+    reloader = LiveReloader()
+    reloader.start_watcher_thread()
 
 service = Sanic()
 service.blueprint(blueprints.bp)
@@ -20,7 +16,7 @@ service.blueprint(blueprints.bp)
 
 @service.listener('before_server_start')
 async def get_config(app, loop):
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1:  # pragma: no cover
         path = sys.argv[1]
         if os.path.isfile(path):
             config = configparser.ConfigParser()
@@ -28,5 +24,5 @@ async def get_config(app, loop):
             app.config.update(config['Storage'])
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     service.run(host="127.0.0.1", port=6363)

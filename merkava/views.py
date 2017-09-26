@@ -40,7 +40,7 @@ class ChannelView(BaseChannelView):
         # TODO:
         # - make the CRUD operations async/await
         status, result = self.channel.delete(id)
-        return response.json(result, status=status)
+        return response.json(None, status=status)
 
     async def put(self, request, channel, id):
         # TODO:

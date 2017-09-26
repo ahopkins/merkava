@@ -1,4 +1,4 @@
-.PHONY: help bump clean clean-pyc clean-build dev list history history-update test test-all coverage docs release sdist
+.PHONY: help bump clean clean-pyc clean-build dev list history history-update test test-verbose test-all coverage docs release sdist
 
 help:
 	@echo "bump - bump the version number, commit, and tag, ex make bump part=minor"
@@ -9,6 +9,7 @@ help:
 	@echo "history - add item to the HISTORY.rst, ex make history h='foo bar'"
 	@echo "history-update - update HISTORY.rst, ex make history-update"
 	@echo "test - run tests quickly with the default Python"
+	@echo "test-verbose - run tests with no capture"
 	@echo "test-all - run tests on every Python version with tox"
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
@@ -44,6 +45,9 @@ lint:
 
 test:
 	py.test
+
+test-verbose:
+	python -m pytest test/ -s
 
 test-all:
 	tox

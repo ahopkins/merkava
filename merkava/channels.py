@@ -23,7 +23,7 @@ class Channel(object):
             '{}.mrkv'.format(self.channel_name)
         )
         if not os.path.exists(self.index_path):
-            self.index = 0
+            self.index = 1
             self._store_index()
         else:
             self.index = self._load(self.index_path)
@@ -52,16 +52,18 @@ class Channel(object):
         self += 1
         return 201, data
 
-    def retrieve(self, id):
+    def retrieve(self, id, override=False):
         file_path = self._build_path(id)
         if not os.path.exists(file_path):
             return 404, None
         data = self._load(file_path)
+        if data.get(b'is_deleted', False) and not override:
+            return 404, None
         return 200, data
 
     def update(self, id, raw):
         file_path = self._build_path(id)
-        data = self.retrieve(id)
+        _, data = self.retrieve(id)
         inner_data = data.get(b'data')
         if isinstance(inner_data, dict):
             data.get(b'data').update(raw)
@@ -72,14 +74,14 @@ class Channel(object):
 
     def delete(self, id):
         file_path = self._build_path(id)
-        data = self.retrieve(id)
+        _, data = self.retrieve(id)
         data.update({'is_deleted': True})
         self._dump(file_path, data)
         return 204, {'ok': True}
 
     def restore(self, id):
         file_path = self._build_path(id)
-        data = self.retrieve(id)
+        _, data = self.retrieve(id, override=True)
         data.update({
             'is_deleted': False,
             'was_restored': True,
@@ -98,7 +100,7 @@ class Channel(object):
         return results
 
     def get_result(self, id):
-        raw = self.retrieve(id)
+        _, raw = self.retrieve(id)
         if raw is None:
             return None
         return Result(raw)
