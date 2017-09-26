@@ -2,8 +2,17 @@
 MerkavaDB
 =============================
 
-.. image:: https://badge.fury.io/py/merkava.png
-    :target: http://badge.fury.io/py/merkava
+.. image:: https://img.shields.io/pypi/v/merkava.svg
+    :target: https://pypi.python.org/pypi/merkava
+    :alt: Latest PyPI version
+
+.. image:: https://img.shields.io/pypi/status/merkava.svg
+    :target: https://pypi.python.org/pypi/merkava
+    :alt: Version status
+
+.. image:: https://img.shields.io/pypi/pyversions/merkava.svg
+    :target: https://pypi.python.org/pypi/merkava
+    :alt: Python 3.5 and 3.6
 
 .. image:: https://travis-ci.org/ahopkins/merkava.png?branch=master
     :target: https://travis-ci.org/ahopkins/merkava
