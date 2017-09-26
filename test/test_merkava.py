@@ -241,5 +241,5 @@ class TestMerkava(object):
         if os.path.exists(folder):
             for file in os.listdir(folder):
                 file_path = os.path.join(folder, file)
-                if os.path.isfile(file_path):
+                if os.path.isfile(file_path) and '.gitkeep' not in file_path:
                     os.unlink(file_path)
