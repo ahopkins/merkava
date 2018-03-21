@@ -33,6 +33,6 @@ setup(
     keywords='merkava',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    classifiers=['Development Status :: 4 - Beta', 'Intended Audience :: Developers', 'License :: OSI Approved :: MIT License', 'Natural Language :: English', 'Programming Language :: Python :: 3.5', 'Programming Language :: Python :: 3.6'],
+    classifiers=['Development Status :: 4 - Beta', 'Intended Audience :: Developers', 'License :: OSI Approved :: MIT License', 'Natural Language :: English', 'Programming Language :: Python :: 3.6'],
     # 'Programming Language :: Python :: Implementation :: PyPy',
 )
