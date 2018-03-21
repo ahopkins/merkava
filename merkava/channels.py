@@ -2,10 +2,13 @@ import os
 import msgpack
 from datetime import datetime
 import pytz
+
+
 # import asyncio
 
 
-class Result(object):
+class Result:
+
     def __init__(self, data):
         self.data = data
 
@@ -14,13 +17,16 @@ class Result(object):
         return self.data.get(b'is_deleted', False)
 
 
-class Channel(object):
+class Channel:
+    # TODO:
+    # - Set maximum_recent to configurable value
+    maximum_recent = 25
+
     def __init__(self, channel_name, data_path):
         self.channel_name = channel_name.lower()
         self.data_path = data_path
         self.index_path = os.path.join(
-            data_path,
-            '{}.mrkv'.format(self.channel_name)
+            data_path, '{}.mrkv'.format(self.channel_name)
         )
         if not os.path.exists(self.index_path):
             self.index = 1
@@ -31,7 +37,6 @@ class Channel(object):
     # async def listen(self):
     #     with open(self.index_path, 'rb') as file:
     #         file.seek(0, 0)
-
     #         while True:
     #             line = file.readline()
     #             if not line:
@@ -46,7 +51,7 @@ class Channel(object):
         data = {
             'id': index,
             'created': datetime.now(tz=pytz.utc).isoformat(),
-            'data': raw
+            'data': raw,
         }
         self._dump(file_path, data)
         self += 1
@@ -56,9 +61,11 @@ class Channel(object):
         file_path = self._build_path(id)
         if not os.path.exists(file_path):
             return 404, None
+
         data = self._load(file_path)
         if data.get(b'is_deleted', False) and not override:
             return 404, None
+
         return 200, data
 
     def update(self, id, raw):
@@ -82,16 +89,14 @@ class Channel(object):
     def restore(self, id):
         file_path = self._build_path(id)
         _, data = self.retrieve(id, override=True)
-        data.update({
-            'is_deleted': False,
-            'was_restored': True,
-        })
+        data.update({'is_deleted': False, 'was_restored': True})
         self._dump(file_path, data)
         return 200, data
 
     def recent(self, num):
         results = []
         index = self.index - 1
+        num = min(num, self.maximum_recent)
         while len(results) < num and index > 0:
             result = self.get_result(index)
             if result is not None and not result.is_deleted:
@@ -103,6 +108,7 @@ class Channel(object):
         _, raw = self.retrieve(id)
         if raw is None:
             return None
+
         return Result(raw)
 
     def __add__(self, n):

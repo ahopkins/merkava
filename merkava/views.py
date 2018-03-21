@@ -3,12 +3,14 @@ from merkava.channels import Channel
 
 
 class BaseChannelView(views.HTTPMethodView):
+
     def set_channel(self, request, channel_name):
         self.channel = Channel(
             channel_name=channel_name,
-            data_path=request.app.config.get('path')
+            data_path=request.app.config.get('path', './'),
         )
-        # service.add_task(self.channel.listen())
+
+    # service.add_task(self.channel.listen())
 
     def dispatch_request(self, request, *args, **kwargs):
         self.set_channel(request, kwargs.get('channel'))
@@ -16,13 +18,12 @@ class BaseChannelView(views.HTTPMethodView):
 
 
 class ChannelView(BaseChannelView):
+
     async def post(self, request, channel, id=None):
         # TODO:
         # - make the CRUD operations async/await
         status, result = self.channel.create(request.json)
-        return response.json({
-            'result': result
-        }, status=status)
+        return response.json({'result': result}, status=status)
 
     async def get(self, request, channel, id):
         # TODO:
@@ -50,6 +51,7 @@ class ChannelView(BaseChannelView):
 
 
 class RecentChannelView(BaseChannelView):
+
     async def get(self, request, channel, num=None):
         if not num:
             num = 5

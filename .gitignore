@@ -49,3 +49,4 @@ docs/_build
 .eggs
 htmlcov
 history
+.pytest_cache

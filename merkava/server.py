@@ -4,14 +4,20 @@ import os
 
 from merkava import blueprints
 from sanic import Sanic
+from sanic.response import json
 
 if os.environ.get('DEVELOPMENT') == 'true':  # pragma: no cover
     from aoiklivereload import LiveReloader
+
     reloader = LiveReloader()
     reloader.start_watcher_thread()
-
 service = Sanic()
 service.blueprint(blueprints.bp)
+
+
+@service.route("/")
+async def is_alive(request):
+    return json({'is_alive': True})
 
 
 @service.listener('before_server_start')
