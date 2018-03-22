@@ -18,7 +18,7 @@ The full documentation is at http://merkava.rtfd.org."""
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 setup(
     name='merkava',
-    version='0.3.0',
+    version='0.3.0alpha',
     description='A fast ordered NoSQL datastore.',
     long_description=readme + '\n\n' + doclink + '\n\n' + history,
     author='Adam Hopkins',
@@ -33,6 +33,6 @@ setup(
     keywords='merkava',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    classifiers=['Development Status :: 4 - Beta', 'Intended Audience :: Developers', 'License :: OSI Approved :: MIT License', 'Natural Language :: English', 'Programming Language :: Python :: 3.6'],
+    classifiers=['Development Status :: 3 - Alpha', 'Intended Audience :: Developers', 'License :: OSI Approved :: MIT License', 'Natural Language :: English', 'Programming Language :: Python :: 3.6'],
     # 'Programming Language :: Python :: Implementation :: PyPy',
 )
