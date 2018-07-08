@@ -9,6 +9,7 @@ import trio
 class Channel:
     maximum_recent = 20
     index_size = 17
+    _cache = {}
 
     def __init__(self, channel_name, data_path):
         self.channel_name = channel_name.lower()
@@ -22,6 +23,9 @@ class Channel:
             await instance.data_path.mkdir()
         if not await instance.index_path.exists():
             await instance._create_index()
+
+        print(f'\n\nOpening {channel_name}\n\n')
+
         return instance
 
     async def connect(self, t, payload):
@@ -37,33 +41,41 @@ class Channel:
         await self._store_index(t)
         file_path = self._build_path(t)
         data = {
-            'id': t,
+            'index': t,
             'created': datetime.now(tz=pytz.utc).isoformat(),
             'data': payload,
         }
         await self._dump(file_path, data)
+        self.set_cache(payload, data)
         return True, f'<Message {t}>'
 
     async def retrieve(self, t, payload, force=False):
         """
         Load a record and return it only if not marked deleted
         """
-        path = self._build_path(payload)
-        if not os.path.exists(path):
-            return True, None
+        if not self.in_cache(payload):
+            path = self._build_path(payload)
+            if not os.path.exists(path):
+                return True, None
 
-        data = await self._load(path)
-        if data.get('is_deleted', False) and force is False:
-            return True, None
+            data = await self._load(path)
+            if data.get('is_deleted', False) and force is False:
+                return True, None
 
-        return True, data
+            self.set_cache(payload, data)
+
+            return True, data
+        else:
+            return True, self.get_cache(payload)
 
     async def update(self, t, payload):
         """
         Make changes to record
         """
-        path = self._build_path(payload)
-        _, result = await self.retrieve(t, payload)
+        index = payload[:17]
+        payload = payload[18:]
+        path = self._build_path(index)
+        _, result = await self.retrieve(t, index)
         if result is not None:
             updates = {
                 'data': payload,
@@ -71,6 +83,7 @@ class Channel:
             }
             result.update(updates)
             await self._dump(path, result)
+            self.set_cache(payload, result)
         return True, None
 
     async def delete(self, t, payload):
@@ -146,15 +159,18 @@ class Channel:
             print('')
             print('')
         print('results', results)
-        results.sort(key=lambda x: x.get('id'), reverse=True)
+        results.sort(key=lambda x: x.get('index'), reverse=True)
         return True, results
 
     async def purge(self, t, payload):
         """
         Remove all deleted records from memory and disk
 
-        FOR FUTURE EDITIONS. CANNOT IMPLEMENT WITH SIMPLISTIC INDEXING.
-        SEE delete()
+        FOR FUTURE EDITIONS.
+        - Perhaps rather than marking a flag on the record, the file_name
+          will be changed. Then when running, retrieve() it will be unable to
+          find the records. And, for purging, they can be easily identified in
+          the file system with a glob.
         """
         return True, None
 
@@ -165,13 +181,13 @@ class Channel:
         for mrkv in await self.data_path.iterdir():
             mrkv.unlink()
         await self.data_path.rmdir()
-        return True, None
+        return True, True
 
-    def _build_path(self, id):
+    def _build_path(self, index):
         """
-        Build a path given an id
+        Build a path given an index
         """
-        file_name = '{}.{}.mrkv'.format(self.channel_name, id)
+        file_name = '{}.{}.mrkv'.format(self.channel_name, index)
         return Path(self.data_path) / file_name
 
     def _stats(self):
@@ -181,11 +197,13 @@ class Channel:
         """
         pass
 
-    def _warmup(self, size=None):
+    async def _warmup(self, size=25):
         """
         Load records into memory of length size
         """
-        pass
+        _, results = await self.recent(None, size)
+        for result in results:
+            self.set_cache(result.get('index'), result)
 
     async def _change_delete(self, t, payload, is_deleted):
         print(f'_change_delete to {is_deleted}')
@@ -206,6 +224,7 @@ class Channel:
         Look for path in memory, if exists, else look for file.
         If the data is found in memory, check for path.
         """
+        print(f'loading from disk: {path}')
         async with await trio.open_file(path, 'rb') as store:
             content = await store.read()
             return msgpack.loads(content, use_list=False, raw=False)
@@ -232,3 +251,15 @@ class Channel:
         """
         if not await self.index_path.exists():
             await self.index_path.touch()
+
+    def set_cache(self, key, value):
+        key = f'{self.channel_name}:{key}'
+        self._cache[key] = value
+
+    def get_cache(self, key):
+        key = f'{self.channel_name}:{key}'
+        return self._cache.get(key, None)
+
+    def in_cache(self, key):
+        key = f'{self.channel_name}:{key}'
+        return key in self._cache

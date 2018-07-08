@@ -9,3 +9,9 @@ def clean():
     print(f'cleaning {len(files)} files')
     for file_name in files:
         os.remove(file_name)
+
+    return True
+
+
+def isalive():
+    return True

@@ -9,6 +9,8 @@ from server import Server
 from time import time
 
 
+# HOST = '192.168.1.2'
+HOST = '0.0.0.0'
 PORT = 6363
 BUFSIZE = 16384
 DIR = '/var/lib/merkava/data'
@@ -19,6 +21,10 @@ packet_schema = {
     'command': str,
     'payload': object,
 }
+
+command_exceptions = (
+    'isalive',
+)
 
 
 class Receiver(Server):
@@ -32,7 +38,7 @@ class Receiver(Server):
         """
         Listen to incoming requests from a client
         """
-        await trio.serve_tcp(self._receive, PORT)
+        await trio.serve_tcp(self._receive, PORT, host=HOST)
 
     async def respond(self, stream, raw):
         msg = msgpack.packb(raw)
@@ -47,15 +53,18 @@ class Receiver(Server):
                 message = self.unpack(packet)
 
                 if message:
-                    channel_name = message.get('channel').lower()
                     command = message.get('command').lower()
                     payload = message.get('payload')
+                    channel_name = message.get('channel')
 
                     # TODO:
                     # - Optimize special command calling
                     if hasattr(commands, command):
-                        getattr(commands, command)()
+                        ret = getattr(commands, command)()
+                        if ret is not None:
+                            await self.respond(stream, ret)
                     else:
+                        channel_name = channel_name.lower()
                         # TODO:
                         # - Only open the channel if NOT in a cache
                         # - If channel is not open, then open it and put it in the cache
@@ -92,6 +101,7 @@ class Receiver(Server):
             if not packet:
                 return self._close_connection()
 
+            # Convert to 1/10 of a microsecond
             t = hash(time() * 10_000_000)
             dump_file = trio.Path(DIR) / f'{t}.pkt'
             # with open(dump_file, 'wb') as f:
@@ -110,11 +120,15 @@ class Receiver(Server):
     def unpack(packet):
         # TODO:
         # - better exception handling
+        # - More validation
         try:
             data = msgpack.unpackb(packet, use_list=False, raw=False)
         except Exception as e:
             print(f'Error: {e}')
             return None
+
+        if data.get('command') in command_exceptions:
+            return data
 
         check_keys = all(x in data for x in packet_schema.keys())
         check_values = all(isinstance(data.get(key), value)
