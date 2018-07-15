@@ -1,4 +1,4 @@
-from receiver import Receiver
+from new import Receiver
 
 
 DEBUG = True
