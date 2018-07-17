@@ -1,4 +1,4 @@
-from new import Receiver
+from new import starter
 
 
 DEBUG = True
@@ -10,4 +10,4 @@ if DEBUG:
 
 
 if __name__ == '__main__':
-    Receiver.run()
+    starter()
