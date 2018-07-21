@@ -36,6 +36,7 @@ def _get_loop():
 
 
 def _decode(raw_message):
+    print(f'\n\n\t****** Message Decoding ******\n\n{message}\n\n\t******************************')
     if not raw_message:
         return None
     parts = raw_message.split(' ')
@@ -53,8 +54,12 @@ async def _intake(message: Message, queue: PriorityQueue) -> None:
 
 async def _receiver(reader, queue):
     while True:
-        data = await reader.read(100)
-        message = _decode(data.decode())
+        print('receiving')
+        data = await reader.read(4096)
+        print(f'received {data}')
+        print('data.decoded {}'.format(data.decode('utf-8')))
+        message = _decode(data.decode('utf-8'))
+        print(f'message {message}')
 
         if not message:
             break
