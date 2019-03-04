@@ -1,0 +1,10 @@
+[package]
+name = "merkava"
+version = "0.1.0"
+authors = ["Adam Hopkins <admhpkns@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+tokio = "0.1"
+uuid = { version = "0.7", features = ["v5"] }
+chrono = "0.4"
