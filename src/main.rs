@@ -16,8 +16,10 @@ use std::net::SocketAddr;
 use std::collections::HashMap;
 use chrono::{Utc};
 use lib::{state, types};
-
 use uuid::Uuid;
+use std::cmp;
+
+const MAXIMUM: usize = 10;
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let addr = env::args().nth(1).unwrap_or("127.0.0.1:6363".to_string());
@@ -46,7 +48,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
                 };
 
                 match request {
-                    types::Request::Push { channel_id, value: _ } => {
+                    types::Request::Push { channel_id, value } => {
                         let mut channels = db.channels.lock().unwrap();
                         if !channels.contains_key(&channel_id) {
                             channels.insert(channel_id.clone(), state::Channel {
@@ -66,7 +68,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
                         let message = state::Message {
                             uuid: uuid.clone(),
                             created: now,
-                            value: String::new(),
+                            value,
                         };
                         let length = data.len();
                         data.push(message.clone());
@@ -75,16 +77,24 @@ fn main() -> Result<(), Box<std::error::Error>> {
                             message,
                         }
                     }
-                    types::Request::Recent { channel_id } => {
+                    types::Request::Recent { channel_id, count } => {
                         let channels = db.channels.lock().unwrap();
                         let _channel = channels.get(&channel_id);
                         let channel = _channel.unwrap();
                         let data = channel.data.lock().unwrap();
-                        let index: usize = data.len() - 1;
-                        let recent = &data[index..];
-                        println!("{:?}", recent);
+                        let index: usize = {
+                            if data.len() < cmp::min(count, MAXIMUM) {
+                                0
+                            } else {
+                                data.len() - cmp::min(count, MAXIMUM)
+                            }
+                        };
+                        // TODO:
+                        // - Make sure that index is not greater than a const MAXIMUM
+                        println!("index {:?}", index);
+                        let messages = &data[index..];
                         types::Response::Recent {
-                            channel_id,
+                            messages: messages.to_vec(),
                         }
                     }
                 }

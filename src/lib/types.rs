@@ -4,7 +4,7 @@ pub enum Request {
     Push { channel_id: String, value: String },
     // Retrieve { channel_id: String, value: String },
     // Update { channel_id: String, value: String },
-    Recent { channel_id: String, },
+    Recent { channel_id: String, count: usize},
 }
 
 pub enum Response {
@@ -12,7 +12,7 @@ pub enum Response {
         message: Message,
     },
     Recent {
-        channel_id: String,
+        messages: Vec<Message>,
     },
     Error {
         msg: String,
@@ -21,12 +21,12 @@ pub enum Response {
 
 impl Request {
     pub fn parse(input: &str) -> Result<Request, String> {
+        println!("Incoming: {:?}", &input);
         let mut parts = input.splitn(3, " ");
         let channel_id = match parts.next() {
             Some(channel_id) => channel_id,
             None => return Err(format!("PUSH needs a channel_id")),
         };
-        println!("Incoming on {:?}", channel_id);
         match parts.next() {
             // Some("RETRIEVE") => {
             //     let key = match parts.next() {
@@ -45,16 +45,21 @@ impl Request {
                     Some(value) => value,
                     None => return Err(format!("PUSH needs a value")),
                 };
-                println!("DOING PUSH on {} with {}", channel_id, value);
                 Ok(Request::Push {
                     channel_id: channel_id.to_string(),
                     value: value.to_string(),
                 })
             }
             Some("RECENT") => {
-                println!("DOING RECENT on {}", channel_id);
+                let count = match parts.next() {
+                    Some("") => "5",
+                    Some(count) => count,
+                    _ => "5",
+                };
+                println!("count {:?}", count);
                 Ok(Request::Recent {
                     channel_id: channel_id.to_string(),
+                    count: count.parse::<usize>().unwrap()
                 })
             }
             Some(cmd) => Err(format!("unknown command: {}", cmd)),
@@ -69,9 +74,9 @@ impl Response {
             Response::Push { ref message } => {
                 format!("Pushed Id {}", message.uuid)
             },
-            Response::Recent { ref channel_id } => {
-                println!("recent {:?}", channel_id);
-                format!("Recent on {}", channel_id)
+            Response::Recent { ref messages } => {
+                println!("recent {:?}", messages);
+                format!("Recent messages {:?}", messages.len())
             },
             // Response::Value { ref key, ref value } => format!("{} = {}", key, value),
             // Response::Set {
