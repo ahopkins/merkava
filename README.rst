@@ -33,21 +33,21 @@ A fast ordered NoSQL database.
 What is MerkavaDB?
 ------------------
 
-A very fast, and lightweight DB for storing ordered data. The order it comes out is the order that it went in. The API is meant to be small and without bloated queries. Consequently, there is a limited set of queries to be made since the primary tool is getting objects in and out of storage in a specific order.
+A fast, and lightweight DB for storing ordered data. The order it comes out is the order that it went in. The API is meant to be small and without bloated queries. Consequently, there is a limited set of queries to be made since the primary tool is getting objects in and out of storage in a specific order.
 
 So, why would I use it?
 -----------------------
 
 Because it is fast. And it is simple.
 
-Let's say, for example, you are building an application. As a part of your application, you want to have a chat or a news feed. The data will ALWAYS be displayed in the same order. Well, you can persist your data objects and feel condifent that they will always be in the same order, no matter what.
+Let's say you want to have a chat or a news feed. The data will ALWAYS be displayed in the same order. Why not persist your data objects and feel condifent that they will always be in the same order, no matter what.
 
 MerkavaDB stores data in a similar format to JSON. So, it is schemaless and will allow you to store data in whatever format you need.
 
 How do I use it?
 ----------------
 
-By making HTTP calls to the database server. All you need to do is specify a "channel" and some data.
+By making TCP connection to the database server. All you need to do is specify a "channel" and some data.
 
 What kind of data?
 ++++++++++++++++++
@@ -65,32 +65,23 @@ Basically anything you would pass by JSON.
 What is a channel?
 ++++++++++++++++++
 
-A channel is a division of data. All data is stored in a sequential order given the channel that it is in. For example, it could be a single chat room or news feed.
+A channel is a division of data. All data is stored in a sequential order for a given channel. For example, it could be a single chat room or news feed.
 
 Supported Operations
 --------------------
 
-- ``HTTP POST /<channel>/`` - create
-- ``HTTP GET /<channel>/<id>/`` - retrieve a single record
-- ``HTTP PATCH /<channel>/<id>/`` - update a record
-- ``HTTP DELETE /<channel>/<id>/`` - delete a record
-- ``HTTP PUT /<channel>/<id>/`` - restore a deleted record
-- ``HTTP GET /<channel>/recent/<X>`` - retrieve an array of the X most recent records
+- ``PUSH`` - add a new item to the channel
+- ``RETRIEVE`` - get a single item by id from the channel
+- ``RECENT`` - get ``n` items from the channel
+- ``UPDATE`` - change a single item
+- ``DELETE`` - remove an item from a channel
+- ``RESTORE`` - return a deleted item to the channel
+- ``PURGE`` - cleanup all deleted items
+- ``FLUSH`` - empty a channel
+- ``STATS`` - receive information and stats about a channel
+
 
 Roadmap
 -------
 
-- Drivers for: Python, NodeJS, Java
-- Test coverage
-- Documentation
-- Clean up utilities
-- User interface
-- Debian installer
-- Single script installer
-- Configuration options
-- Examples
-- Logging
-
-Current Version
----------------
-version 0.3.0
+There currently is a proof of concept implementation out there. It is being rebuilt from the ground up in Rust. More to come later.
