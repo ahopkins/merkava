@@ -50,3 +50,7 @@ docs/_build
 htmlcov
 history
 .pytest_cache
+example
+
+/target
+**/*.rs.bk
