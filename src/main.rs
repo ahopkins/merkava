@@ -28,7 +28,8 @@ use std::cmp;
 use blob_uuid;
 
 const MAXIMUM: usize = 10;
-const BACKUP_INTERVAL: u64 = 3; // 5 minutes in seconds
+const BACKUP_INTERVAL: u64 = 0; // seconds
+
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let addr = env::args().nth(1).unwrap_or("127.0.0.1:6363".to_string());
@@ -39,13 +40,13 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
     let db = state::create_db();
 
-    let start_backup = Interval::new(Instant::now(), Duration::from_millis(BACKUP_INTERVAL * 1_000))
+    let start_backup = Interval::new(Instant::now(), Duration::from_millis(BACKUP_INTERVAL * 1_000 + 1))
         .for_each(|_| {
             let address = "127.0.0.1:6363".parse().expect("Unable to parse address");
             let connection = TcpStream::connect(&address);
             connection.and_then(|socket| {
-                let (rx, mut tx) = socket.split();
-                tx.poll_write(b"foo RECENT");
+                let (_, mut tx) = socket.split();
+                tx.poll_write(b"foo RECENT").expect("Unable to send to TCP connection");
                 return Ok(());
             });
 
@@ -160,7 +161,6 @@ fn main() -> Result<(), Box<std::error::Error>> {
                         let channel = _channel.unwrap();
                         let data = channel.data.lock().unwrap();
                         let index = channel.index.lock().unwrap();
-                        let message = &data[0];
 
                         let path = format!("/mnt/c/Users/Adam/Projects/merkava/.data/{}", channel_id);
                         match create_dir_all(path.clone()) {
@@ -170,11 +170,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
                         
                         let data_file = format!("{}/data.mrkv", path);
                         let writer = File::create(data_file).unwrap();
-                        serialize_into(writer, &data.clone());
+                        serialize_into(writer, &data.clone()).expect("Unable to write to file");
                         
                         let index_file = format!("{}/index.mrkv", path);
                         let writer = File::create(index_file).unwrap();
-                        serialize_into(writer, &index.clone());
+                        serialize_into(writer, &index.clone()).expect("Unable to write to file");
                         
                         types::Response::Done {}
                     }
@@ -192,10 +192,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
         });
 
     tokio::run(lazy(|| {
-        tokio::spawn(start_backup);
+        if BACKUP_INTERVAL > 0 {
+            tokio::spawn(start_backup);
+        }
         tokio::spawn(done);
         Ok(())
     }));
-    // tokio::run(done);
     Ok(())
 }

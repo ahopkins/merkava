@@ -34,18 +34,6 @@ impl Request {
             None => return Err(format!("PUSH needs a channel_id")),
         };
         match parts.next() {
-            // Some("RETRIEVE") => {
-            //     let key = match parts.next() {
-            //         Some(key) => key,
-            //         None => return Err(format!("GET must be followed by a key")),
-            //     };
-            //     if parts.next().is_some() {
-            //         return Err(format!("GET's key must not be followed by anything"));
-            //     }
-            //     Ok(Request::Retrieve {
-            //         key: key.to_string(),
-            //     })
-            // }
             Some("PUSH") => {
                 let temp = match parts.next() {
                     Some(temp) => temp,
@@ -115,7 +103,7 @@ impl Response {
                 let serialized = serde_json::to_string(message).unwrap();
                 format!("OK {}", serialized)
             },
-            Response::Done { } => format!("OK Done"),
+            Response::Done { } => format!("OK Done."),
             Response::Error { ref message } => format!("ER {}", message),
         }
     }
