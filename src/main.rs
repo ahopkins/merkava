@@ -4,14 +4,17 @@ extern crate tokio;
 extern crate uuid;
 extern crate chrono;
 extern crate serde_derive;
+extern crate glob;
 
 mod lib;
 
 use bincode::serialize_into;
-// use bincode::SizeLimit;
+use futures::future::lazy;
 use tokio::io::{lines, write_all};
-use tokio::net::TcpListener;
+use tokio::net::{TcpListener, TcpStream};
 use tokio::prelude::*;
+use tokio::timer::Interval;
+use std::time::{Duration, Instant};
 use std::sync::{Mutex};
 use std::fs::{File, create_dir_all};
 use std::io::{BufReader};
@@ -25,6 +28,7 @@ use std::cmp;
 use blob_uuid;
 
 const MAXIMUM: usize = 10;
+const BACKUP_INTERVAL: u64 = 3; // 5 minutes in seconds
 
 fn main() -> Result<(), Box<std::error::Error>> {
     let addr = env::args().nth(1).unwrap_or("127.0.0.1:6363".to_string());
@@ -35,6 +39,20 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
     let db = state::create_db();
 
+    let start_backup = Interval::new(Instant::now(), Duration::from_millis(BACKUP_INTERVAL * 1_000))
+        .for_each(|_| {
+            let address = "127.0.0.1:6363".parse().expect("Unable to parse address");
+            let connection = TcpStream::connect(&address);
+            connection.and_then(|socket| {
+                let (rx, mut tx) = socket.split();
+                tx.poll_write(b"foo RECENT");
+                return Ok(());
+            });
+
+            Ok(())
+        })
+        .map_err(|e| panic!("interval errored; err={:?}", e));
+    
     let done = socket
         .incoming()
         .map_err(|e| println!("failed to accept socket; error = {:?}", e))
@@ -141,16 +159,23 @@ fn main() -> Result<(), Box<std::error::Error>> {
                         let _channel = channels.get(&channel_id);
                         let channel = _channel.unwrap();
                         let data = channel.data.lock().unwrap();
+                        let index = channel.index.lock().unwrap();
                         let message = &data[0];
 
-                        let path = format!("/home/adam/Projects/merkava/.data/{}", channel_id);
+                        let path = format!("/mnt/c/Users/Adam/Projects/merkava/.data/{}", channel_id);
                         match create_dir_all(path.clone()) {
                             Err(e) => return types::Response::Error { message: e.to_string() },
                             _ => ()
                         }
-                        let file = format!("{}/{}.mrkv", path, message.uid);
-                        let writer = File::create(file).unwrap();
-                        serialize_into::<File, state::Message>(writer, &message).unwrap();
+                        
+                        let data_file = format!("{}/data.mrkv", path);
+                        let writer = File::create(data_file).unwrap();
+                        serialize_into(writer, &data.clone());
+                        
+                        let index_file = format!("{}/index.mrkv", path);
+                        let writer = File::create(index_file).unwrap();
+                        serialize_into(writer, &index.clone());
+                        
                         types::Response::Done {}
                     }
                 }
@@ -166,6 +191,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
             tokio::spawn(msg)
         });
 
-    tokio::run(done);
+    tokio::run(lazy(|| {
+        tokio::spawn(start_backup);
+        tokio::spawn(done);
+        Ok(())
+    }));
+    // tokio::run(done);
     Ok(())
 }

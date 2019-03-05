@@ -2,12 +2,20 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
+// use std::ffi::{OsStr, OsString};
+// use std::path::{Component, Path};
+use glob::glob;
+use std::result::Result;
+use bincode::deserialize_from;
+use std::fs::{File};
 
+#[derive(Debug)]
 pub struct Channel {
     pub index: Mutex<HashMap<String, usize>>,
     pub data: Mutex<Vec<Message>>,
 }
 
+#[derive(Debug)]
 pub struct Database {
     pub channels: Arc<Mutex<HashMap<String, Channel>>>,
 }
@@ -21,14 +29,32 @@ pub struct Message {
 }
 
 pub fn create_db() -> Arc<Database>{
-    let index = HashMap::new();
-    let data = Vec::new();
-    let foo = Channel {
-        index: Mutex::new(index),
-        data: Mutex::new(data),
-    };
     let mut channels = HashMap::new();
-    channels.insert("foo".to_string(), foo);
+
+    for entry in glob("/mnt/c/Users/Adam/Projects/merkava/.data/*").unwrap().filter_map(Result::ok) {
+        let path = entry.as_path();
+        let split_path = path.components();
+        let channel_id = match split_path.last() {
+            Some(item) => item.as_os_str().to_os_string().into_string().unwrap(),
+            _ => break,
+        };
+
+        let data_file = format!("{}/data.mrkv", path.display());
+        let reader = File::open(data_file).unwrap();
+        let data: Vec<Message> = deserialize_from(reader).unwrap();
+
+        let index_file = format!("{}/index.mrkv", path.display());
+        let reader = File::open(index_file).unwrap();
+        let index: HashMap<String, usize> = deserialize_from(reader).unwrap();
+
+        let channel = Channel {
+            index: Mutex::new(index),
+            data: Mutex::new(data),
+        };
+        channels.insert(channel_id, channel);
+    }
+
+
     let db = Arc::new(Database {
         channels: Arc::new(Mutex::new(channels)),
     });
