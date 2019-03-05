@@ -2,7 +2,7 @@ use crate::lib::state::Message;
 
 pub enum Request {
     Push { channel_id: String, value: String },
-    // Retrieve { channel_id: String, value: String },
+    Retrieve { channel_id: String, uuid: String },
     // Update { channel_id: String, value: String },
     Recent { channel_id: String, count: usize},
 }
@@ -13,6 +13,12 @@ pub enum Response {
     },
     Recent {
         messages: Vec<Message>,
+    },
+    Retrieve {
+        message: Message,
+    },
+    Foo {
+        message: String,
     },
     Error {
         msg: String,
@@ -62,6 +68,16 @@ impl Request {
                     count: count.parse::<usize>().unwrap()
                 })
             }
+            Some("RETRIEVE") => {
+                let uuid = match parts.next() {
+                    Some(uuid) => uuid,
+                    None => return Err(format!("RETRIEVE needs a uuid")),
+                };
+                Ok(Request::Retrieve {
+                    channel_id: channel_id.to_string(),
+                    uuid: uuid.to_string(),
+                })
+            }
             Some(cmd) => Err(format!("unknown command: {}", cmd)),
             None => Err(format!("empty input")),
         }
@@ -71,12 +87,19 @@ impl Request {
 impl Response {
     pub fn serialize(&self) -> String {
         match *self {
+            Response::Foo { ref message } => {
+                format!("foo {}", message)
+            },
             Response::Push { ref message } => {
-                format!("Pushed Id {}", message.uuid)
+                format!("OK {}", message.uuid)
             },
             Response::Recent { ref messages } => {
-                println!("recent {:?}", messages);
-                format!("Recent messages {:?}", messages.len())
+                let serialized = serde_json::to_string(messages).unwrap();
+                format!("OK {}", serialized)
+            },
+            Response::Retrieve { ref message } => {
+                let serialized = serde_json::to_string(message).unwrap();
+                format!("OK {}", serialized)
             },
             // Response::Value { ref key, ref value } => format!("{} = {}", key, value),
             // Response::Set {

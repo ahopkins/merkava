@@ -89,12 +89,24 @@ fn main() -> Result<(), Box<std::error::Error>> {
                                 data.len() - cmp::min(count, MAXIMUM)
                             }
                         };
-                        // TODO:
-                        // - Make sure that index is not greater than a const MAXIMUM
+
                         println!("index {:?}", index);
                         let messages = &data[index..];
                         types::Response::Recent {
                             messages: messages.to_vec(),
+                        }
+                    }
+                    types::Request::Retrieve { channel_id, uuid } => {
+                        // let channels = db.channels.lock().unwrap();
+                        // let _channel = channels.get(&channel_id);
+                        // let channel = _channel.unwrap();
+                        // let data = channel.data.lock().unwrap();
+                        // let index = channel.index.lock().unwrap();
+                        // let message_index = &index.get(&uuid).unwrap();
+                        // println!("index {:?}", message_index);
+                        // let message = &data[message_index];
+                        types::Response::Foo {
+                            message: "bar".to_string(),
                         }
                     }
                 }
