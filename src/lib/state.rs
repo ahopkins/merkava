@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 pub struct Channel {
     pub index: Mutex<HashMap<String, usize>>,
@@ -12,9 +12,9 @@ pub struct Database {
     pub channels: Arc<Mutex<HashMap<String, Channel>>>,
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct Message {
-    pub uuid: String,
+    pub uid: String,
     pub created: DateTime<Utc>,
     pub value: String,
     // pub data: String,

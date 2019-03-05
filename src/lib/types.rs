@@ -2,9 +2,10 @@ use crate::lib::state::Message;
 
 pub enum Request {
     Push { channel_id: String, value: String },
-    Retrieve { channel_id: String, uuid: String },
+    Retrieve { channel_id: String, uid: String },
     // Update { channel_id: String, value: String },
-    Recent { channel_id: String, count: usize},
+    Recent { channel_id: String, count: usize, offset: usize },
+    Backup { channel_id: String },
 }
 
 pub enum Response {
@@ -17,18 +18,17 @@ pub enum Response {
     Retrieve {
         message: Message,
     },
-    Foo {
-        message: String,
+    Done {
     },
     Error {
-        msg: String,
+        message: String,
     },
 }
 
 impl Request {
     pub fn parse(input: &str) -> Result<Request, String> {
         println!("Incoming: {:?}", &input);
-        let mut parts = input.splitn(3, " ");
+        let mut parts = input.splitn(4, " ");
         let channel_id = match parts.next() {
             Some(channel_id) => channel_id,
             None => return Err(format!("PUSH needs a channel_id")),
@@ -47,9 +47,13 @@ impl Request {
             //     })
             // }
             Some("PUSH") => {
-                let value = match parts.next() {
-                    Some(value) => value,
+                let temp = match parts.next() {
+                    Some(temp) => temp,
                     None => return Err(format!("PUSH needs a value")),
+                };
+                let value = match parts.next() {
+                    Some(value) => format!("{} {}", temp, value),
+                    None => format!("{}", temp),
                 };
                 Ok(Request::Push {
                     channel_id: channel_id.to_string(),
@@ -62,20 +66,30 @@ impl Request {
                     Some(count) => count,
                     _ => "5",
                 };
-                println!("count {:?}", count);
+                let offset = match parts.next() {
+                    Some("") => "0",
+                    Some(offset) => offset,
+                    _ => "0",
+                };
                 Ok(Request::Recent {
                     channel_id: channel_id.to_string(),
-                    count: count.parse::<usize>().unwrap()
+                    count: count.parse::<usize>().unwrap(),
+                    offset: offset.parse::<usize>().unwrap(),
                 })
             }
             Some("RETRIEVE") => {
-                let uuid = match parts.next() {
-                    Some(uuid) => uuid,
-                    None => return Err(format!("RETRIEVE needs a uuid")),
+                let uid = match parts.next() {
+                    Some(uid) => uid,
+                    None => return Err(format!("RETRIEVE needs a uid")),
                 };
                 Ok(Request::Retrieve {
                     channel_id: channel_id.to_string(),
-                    uuid: uuid.to_string(),
+                    uid: uid.to_string(),
+                })
+            }
+            Some("BACKUP") => {
+                Ok(Request::Backup {
+                    channel_id: channel_id.to_string(),
                 })
             }
             Some(cmd) => Err(format!("unknown command: {}", cmd)),
@@ -87,11 +101,11 @@ impl Request {
 impl Response {
     pub fn serialize(&self) -> String {
         match *self {
-            Response::Foo { ref message } => {
-                format!("foo {}", message)
-            },
+            // Response::Foo { ref message } => {
+            //     format!("foo {}", message)
+            // },
             Response::Push { ref message } => {
-                format!("OK {}", message.uuid)
+                format!("OK {}", message.uid)
             },
             Response::Recent { ref messages } => {
                 let serialized = serde_json::to_string(messages).unwrap();
@@ -101,13 +115,8 @@ impl Response {
                 let serialized = serde_json::to_string(message).unwrap();
                 format!("OK {}", serialized)
             },
-            // Response::Value { ref key, ref value } => format!("{} = {}", key, value),
-            // Response::Set {
-            //     ref key,
-            //     ref value,
-            //     ref previous,
-            // } => format!("set {} = `{}`, previous: {:?}", key, value, previous),
-            Response::Error { ref msg } => format!("error: {}", msg),
+            Response::Done { } => format!("OK Done"),
+            Response::Error { ref message } => format!("ER {}", message),
         }
     }
 }

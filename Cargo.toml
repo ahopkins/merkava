@@ -5,8 +5,11 @@ authors = ["Adam Hopkins <admhpkns@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-tokio = "0.1"
-uuid = { version = "0.7", features = ["v5"] }
+bincode = "1.1.2"
+blob-uuid = "0.3.0"
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_derive = "1.0.27"
+tokio = "0.1"
+uuid = { version = "0.7", features = ["v5"] }
