@@ -17,27 +17,30 @@ So, why would I use it?
 
 Because it is fast. And it is simple.
 
-Let's say you want to have a chat or a news feed. The data will ALWAYS be displayed in the same order. Why not persist your data objects and feel condifent that they will always be in the same order, no matter what.
+Let's say you want to have a chat or a news feed. The data will ALWAYS be displayed in the same order. Why not persist your data objects in the order you want them in?
 
-MerkavaDB stores data in a similar format to JSON. So, it is schemaless and will allow you to store data in whatever format you need.
+MerkavaDB stores whatever data you need it to. It is schemaless. If you can transfer it, it will store.
 
 How do I use it?
 ----------------
 
-By making TCP connection to the database server. All you need to do is specify a "channel" and some data.
+By making TCP connection to the database server. All you need to do is specify a "channel" and some data. The protocol is simple:
 
-What kind of data?
-++++++++++++++++++
+::
 
-- nulls
-- booleans
-- integers
-- floats
-- strings
-- arrays/lists
-- maps/dicts
+    <channel> <command> <extras>\n
+    
+Note, the line break at the end of the message is critical. As is the single spacing.
 
-Basically anything you would pass by JSON.
+Your response will be:
+
+::
+
+    OK <message>
+    
+    or
+    
+    ER <message>
 
 What is a channel?
 ++++++++++++++++++
@@ -50,13 +53,25 @@ Supported Operations
 - ``PUSH`` - add a new item to the channel
 - ``RETRIEVE`` - get a single item by id from the channel
 - ``RECENT`` - get ``n` items from the channel
-- ``UPDATE`` - change a single item
-- ``DELETE`` - remove an item from a channel
-- ``RESTORE`` - return a deleted item to the channel
-- ``PURGE`` - cleanup all deleted items
-- ``FLUSH`` - empty a channel
+- ``UPDATE`` - change a single item (not yet implemented)
+- ``DELETE`` - remove an item from a channel (not yet implemented)
+- ``RESTORE`` - return a deleted item to the channel (not yet implemented)
+- ``PURGE`` - cleanup all deleted items (not yet implemented)
+- ``FLUSH`` - empty a channel (not yet implemented)
+- ``BACKUP`` - persist a channel to disk
 - ``STATS`` - receive information and stats about a channel
 
+
+Examples
+--------
+
+| ``foo PUSH this is a message``
+| ``foo RECENT``
+| ``foo RECENT 5`` 5 most recent messages
+| ``foo RECENT 5 2`` 5 most recent messages, offset by 2
+| ``foo RETRIEVE EaR1US7HVN6xuSG-2SgJtA``
+| ``foo STATS``
+| 
 
 Roadmap
 -------
