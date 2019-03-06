@@ -54,9 +54,9 @@ Supported Operations
 - ``RETRIEVE`` - get a single item by id from the channel
 - ``RECENT`` - get ``n` items from the channel
 - ``UPDATE`` - change a single item
-- ``DELETE`` - remove an item from a channel _(not yet implemented)_
-- ``RESTORE`` - return a deleted item to the channel _(not yet implemented)_
-- ``PURGE`` - cleanup all deleted items _(not yet implemented)_
+- ``DELETE`` - remove an item from a channel *(not yet implemented)*
+- ``RESTORE`` - return a deleted item to the channel *(not yet implemented)*
+- ``PURGE`` - cleanup all deleted items *(not yet implemented)*
 - ``FLUSH`` - empty a channel
 - ``BACKUP`` - persist a channel to disk
 - ``STATS`` - receive information and stats about a channel
