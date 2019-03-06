@@ -1,13 +1,11 @@
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
-use chrono::{DateTime, Utc};
-use serde::{Serialize, Deserialize};
-// use std::ffi::{OsStr, OsString};
-// use std::path::{Component, Path};
-use glob::glob;
-use std::result::Result;
 use bincode::deserialize_from;
-use std::fs::{File};
+use chrono::{DateTime, Utc};
+use glob::glob;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs::File;
+use std::result::Result;
+use std::sync::{Arc, Mutex};
 
 #[derive(Debug)]
 pub struct Channel {
@@ -28,10 +26,13 @@ pub struct Message {
     // pub data: String,
 }
 
-pub fn create_db() -> Arc<Database>{
+pub fn create_db() -> Arc<Database> {
     let mut channels = HashMap::new();
 
-    for entry in glob("/home/adam/Projects/merkava/.data/*").unwrap().filter_map(Result::ok) {
+    for entry in glob("/home/adam/Projects/merkava/.data/*")
+        .unwrap()
+        .filter_map(Result::ok)
+    {
         let path = entry.as_path();
         let split_path = path.components();
         let channel_id = match split_path.last() {
@@ -53,7 +54,6 @@ pub fn create_db() -> Arc<Database>{
         };
         channels.insert(channel_id, channel);
     }
-
 
     let db = Arc::new(Database {
         channels: Arc::new(Mutex::new(channels)),
