@@ -138,6 +138,16 @@ fn do_retrieve(db: &Arc<state::Database>, channel_id: String, uid: String) -> ty
     }
 }
 
+fn do_connect(_db: &Arc<state::Database>, _channel_id: String) -> types::Response {
+    types::Response::Done {}
+}
+
+fn do_flush(db: &Arc<state::Database>, channel_id: String) -> types::Response {
+    let mut channels = db.channels.lock().unwrap();
+    channels.remove(&channel_id);
+    types::Response::Done {}
+}
+
 fn do_backup(db: &Arc<state::Database>, channel_id: String) -> types::Response {
     let channels = db.channels.lock().unwrap();
     let _channel = channels.get(&channel_id);
@@ -195,6 +205,8 @@ pub fn handle_request(db: &Arc<state::Database>, line: String) -> types::Respons
             uid,
             value,
         } => do_update(&db, channel_id, uid, value),
+        types::Request::Connect { channel_id } => do_connect(&db, channel_id),
+        types::Request::Flush { channel_id } => do_flush(&db, channel_id),
         types::Request::Backup { channel_id } => do_backup(&db, channel_id),
         types::Request::Stats { channel_id } => do_stats(&db, channel_id),
     }

@@ -19,6 +19,12 @@ pub enum Request {
         count: usize,
         offset: usize,
     },
+    Connect {
+        channel_id: String,
+    },
+    Flush {
+        channel_id: String,
+    },
     Backup {
         channel_id: String,
     },
@@ -105,14 +111,20 @@ impl Request {
                     value: value.to_string(),
                 })
             }
+            Some("CONNECT") => Ok(Request::Connect {
+                channel_id: channel_id.to_string(),
+            }),
+            Some("FLUSH") => Ok(Request::Flush {
+                channel_id: channel_id.to_string(),
+            }),
             Some("BACKUP") => Ok(Request::Backup {
                 channel_id: channel_id.to_string(),
             }),
             Some("STATS") => Ok(Request::Stats {
                 channel_id: channel_id.to_string(),
             }),
-            Some(cmd) => Err(format!("unknown command: {}", cmd)),
-            None => Err(format!("empty input")),
+            Some(cmd) => Err(format!("ER unknown command: {}\n", cmd)),
+            None => Err(format!("ER empty input\n")),
         }
     }
 }
