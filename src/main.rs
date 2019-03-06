@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
         .for_each(|_| {
             let address = "127.0.0.1:6363".parse().expect("Unable to parse address");
             let connection = TcpStream::connect(&address);
-            connection.and_then(|socket| {
+            let _do_process = connection.and_then(|socket| {
                 let (_, mut tx) = socket.split();
                 tx.poll_write(b"foo RECENT").expect("Unable to send to TCP connection");
                 return Ok(());
@@ -53,7 +53,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
             Ok(())
         })
         .map_err(|e| panic!("interval errored; err={:?}", e));
-    
+
     let done = socket
         .incoming()
         .map_err(|e| println!("failed to accept socket; error = {:?}", e))
@@ -105,7 +105,13 @@ fn main() -> Result<(), Box<std::error::Error>> {
                     types::Request::Recent { channel_id, count, offset } => {
                         let channels = db.channels.lock().unwrap();
                         let _channel = channels.get(&channel_id);
-                        let channel = _channel.unwrap();
+                        let channel: &state::Channel = match _channel {
+                            Some(_) => _channel.unwrap(),
+                            None => return types::Response::Error {
+                                message: "No messages found".to_string(),
+                            }
+                        };
+                        // let channel = _channel.unwrap();
                         let data = channel.data.lock().unwrap();
                         let index: usize = {
                             if data.len() < cmp::min(count, MAXIMUM) {
@@ -133,6 +139,11 @@ fn main() -> Result<(), Box<std::error::Error>> {
                             // _ => &data[index..],
                             _ => &data[(index - offset)..end],
                         };
+                        if messages.len() == 0 {
+                            return types::Response::Error {
+                                message: "No messages found".to_string(),
+                            }
+                        }
                         types::Response::Recent {
                             messages: messages.to_vec(),
                         }
@@ -162,20 +173,20 @@ fn main() -> Result<(), Box<std::error::Error>> {
                         let data = channel.data.lock().unwrap();
                         let index = channel.index.lock().unwrap();
 
-                        let path = format!("/mnt/c/Users/Adam/Projects/merkava/.data/{}", channel_id);
+                        let path = format!("/home/adam/Projects/merkava/.data/{}", channel_id);
                         match create_dir_all(path.clone()) {
                             Err(e) => return types::Response::Error { message: e.to_string() },
                             _ => ()
                         }
-                        
+
                         let data_file = format!("{}/data.mrkv", path);
                         let writer = File::create(data_file).unwrap();
                         serialize_into(writer, &data.clone()).expect("Unable to write to file");
-                        
+
                         let index_file = format!("{}/index.mrkv", path);
                         let writer = File::create(index_file).unwrap();
                         serialize_into(writer, &index.clone()).expect("Unable to write to file");
-                        
+
                         types::Response::Done {}
                     }
                 }

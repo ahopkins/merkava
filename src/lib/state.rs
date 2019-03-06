@@ -31,7 +31,7 @@ pub struct Message {
 pub fn create_db() -> Arc<Database>{
     let mut channels = HashMap::new();
 
-    for entry in glob("/mnt/c/Users/Adam/Projects/merkava/.data/*").unwrap().filter_map(Result::ok) {
+    for entry in glob("/home/adam/Projects/merkava/.data/*").unwrap().filter_map(Result::ok) {
         let path = entry.as_path();
         let split_path = path.components();
         let channel_id = match split_path.last() {
