@@ -11,6 +11,12 @@ use uuid::Uuid;
 const MAXIMUM: usize = 10;
 
 fn do_push(db: &Arc<state::Database>, channel_id: String, value: String) -> types::Response {
+    if value.chars().count() == 0 {
+        return types::Response::Error {
+            message: "Cannot push empty message".to_string(),
+        };
+    }
+
     let mut channels = db.channels.lock().unwrap();
     if !channels.contains_key(&channel_id) {
         channels.insert(
@@ -211,5 +217,63 @@ pub fn handle_request(db: &Arc<state::Database>, line: String) -> types::Respons
         types::Request::Flush { channel_id } => do_flush(&db, channel_id),
         types::Request::Backup { channel_id } => do_backup(&db, channel_id),
         types::Request::Stats { channel_id } => do_stats(&db, channel_id),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::lib::state;
+    use std::collections::HashMap;
+    use std::sync::{Arc, Mutex};
+
+    #[test]
+    fn do_push_receive_ok_response() {
+        let channels = HashMap::new();
+        let db = Arc::new(state::Database {
+            channels: Arc::new(Mutex::new(channels)),
+        });
+        let response = do_push(&db, String::from("foobar"), String::from("something"));
+        let message = response.serialize();
+        assert_eq!(&message[..2], "OK");
+    }
+
+    #[test]
+    fn do_push_receive_er_response() {
+        let channels = HashMap::new();
+        let db = Arc::new(state::Database {
+            channels: Arc::new(Mutex::new(channels)),
+        });
+        let response = do_push(&db, String::from("foobar"), String::from(""));
+        let message = response.serialize();
+        assert_eq!(&message[..2], "ER");
+    }
+
+    #[test]
+    fn do_push_message_stored() {
+        let channels = HashMap::new();
+        let db = Arc::new(state::Database {
+            channels: Arc::new(Mutex::new(channels)),
+        });
+        let text = String::from("something");
+        let response = do_push(&db, String::from("foobar"), text.clone());
+        let mut message = response.serialize();
+        let uid = &mut message[3..].to_string();
+        uid.pop();
+
+        let channels = db.channels.lock().unwrap();
+        let index = &channels
+            .get("foobar")
+            .unwrap()
+            .index
+            .lock()
+            .unwrap()
+            .clone();
+        let data = &channels.get("foobar").unwrap().data.lock().unwrap().clone();
+        let message_index = index.get(uid).unwrap();
+        let message = &data[*message_index];
+
+        assert!(index.contains_key(uid), "uid={}. index={:?}", uid, index);
+        assert_eq!(message.value, text);
     }
 }
