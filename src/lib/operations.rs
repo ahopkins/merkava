@@ -231,9 +231,9 @@ pub fn handle_request(db: &Arc<state::Database>, line: String) -> types::Respons
 mod tests {
     use super::*;
     use crate::lib::state;
+    use serde_json::Value;
     use std::collections::HashMap;
     use std::sync::{Arc, Mutex};
-    use serde_json::{Value};
 
     fn make_db() -> std::sync::Arc<state::Database> {
         let channels = HashMap::new();
