@@ -9,7 +9,7 @@ extern crate uuid;
 mod lib;
 
 use futures::future::lazy;
-use lib::{operations, state};
+use lib::{conf, operations, state};
 use std::env;
 use std::io::BufReader;
 use std::net::SocketAddr;
@@ -19,25 +19,25 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::prelude::*;
 use tokio::timer::Interval;
 
-const BACKUP_INTERVAL: u64 = 0; // seconds
-
 fn main() -> Result<(), Box<std::error::Error>> {
-    let addr = env::args().nth(1).unwrap_or("127.0.0.1:6363".to_string());
-    let addr = addr.parse::<SocketAddr>()?;
-
-    let socket = TcpListener::bind(&addr)?;
-    println!("Listening on: {}", addr);
+    let mrkvconf = env::args()
+        .nth(1)
+        .unwrap_or("./example/mrkvconf.toml".to_string());
+    let conf = conf::get_conf(mrkvconf);
+    let addr = conf.get::<SocketAddr>("network.address").unwrap();
+    let backup_interval = conf.get::<u64>("backup.interval").unwrap();
 
     let start_backup = Interval::new(
         Instant::now(),
-        Duration::from_millis(BACKUP_INTERVAL * 1_000 + 1),
+        Duration::from_millis(&backup_interval * 1_000 + 1),
     )
-    .for_each(|_| {
-        let address = "127.0.0.1:6363".parse().expect("Unable to parse address");
-        let connection = TcpStream::connect(&address);
+    .for_each(move |_| {
+        println!("running");
+        let connection = TcpStream::connect(&addr);
         let _do_process = connection.and_then(|socket| {
+            println!("process");
             let (_, mut tx) = socket.split();
-            tx.poll_write(b"foo RECENT")
+            tx.poll_write(b"foo RECENT\n")
                 .expect("Unable to send to TCP connection");
             return Ok(());
         });
@@ -46,12 +46,14 @@ fn main() -> Result<(), Box<std::error::Error>> {
     })
     .map_err(|e| panic!("interval errored; err={:?}", e));
 
+    let socket = TcpListener::bind(&addr)?;
+    println!("Listening on: {}", addr);
     let db = state::create_db();
     let done = socket
         .incoming()
         .map_err(|e| println!("failed to accept socket; error = {:?}", e))
         .for_each(move |socket| {
-            // println!("accepted socket; addr={:?}", socket.peer_addr().unwrap());
+            println!("accepted socket; addr={:?}", socket.peer_addr().unwrap());
 
             let (reader, writer) = socket.split();
             let lines = lines(BufReader::new(reader));
@@ -70,8 +72,9 @@ fn main() -> Result<(), Box<std::error::Error>> {
             tokio::spawn(msg)
         });
 
-    tokio::run(lazy(|| {
-        if BACKUP_INTERVAL > 0 {
+    tokio::run(lazy(move || {
+        if backup_interval > 0 {
+            println!("starting backup");
             tokio::spawn(start_backup);
         }
         tokio::spawn(done);

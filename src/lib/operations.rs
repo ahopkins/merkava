@@ -48,6 +48,7 @@ fn do_recent(
     count: usize,
     offset: usize,
 ) -> types::Response {
+    println!("doing recent");
     let channels = db.channels.lock().unwrap();
     let _channel = channels.get(&channel_id);
     let channel: &state::Channel = match _channel {
@@ -187,6 +188,7 @@ fn do_stats(db: &Arc<state::Database>, channel_id: String) -> types::Response {
 }
 
 pub fn handle_request(db: &Arc<state::Database>, line: String) -> types::Response {
+    println!("incoming request{:?}", line);
     let request = match types::Request::parse(&line) {
         Ok(req) => req,
         Err(e) => return types::Response::Error { message: e },
