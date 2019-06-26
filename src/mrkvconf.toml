@@ -1,0 +1,10 @@
+[network]
+address = "127.0.0.1:6363"
+
+[persistence]
+interval = 0
+# path = "/var/merkava/data"
+path = "/home/adam/.local/merkava/data"
+
+[logging]
+verbosity = 0
