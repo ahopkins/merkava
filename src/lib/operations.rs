@@ -54,7 +54,7 @@ fn do_recent(
     count: usize,
     offset: usize,
 ) -> types::Response {
-    println!("doing recent");
+    debug!("doing recent");
     let channels = db.channels.lock().unwrap();
     let _channel = channels.get(&channel_id);
     let channel: &state::Channel = match _channel {
@@ -162,14 +162,16 @@ fn do_flush(db: &Arc<state::Database>, channel_id: String) -> types::Response {
     types::Response::Done {}
 }
 
-fn do_backup(db: &Arc<state::Database>, channel_id: String) -> types::Response {
+fn do_backup(db: &Arc<state::Database>, conf: &config::Config, channel_id: String) -> types::Response {
     let channels = db.channels.lock().unwrap();
     let _channel = channels.get(&channel_id);
     let channel = _channel.unwrap();
     let data = channel.data.lock().unwrap();
     let index = channel.index.lock().unwrap();
-
-    let path = format!("/home/adam/Projects/merkava/.data/{}", channel_id);
+    let backup_path = conf.get::<String>("persistence.path").unwrap();
+    let path = format!("{}/{}", backup_path, channel_id);
+    info!("{}", format!("Backing up to {}", path));
+    
     match create_dir_all(path.clone()) {
         Err(e) => {
             return types::Response::Error {
@@ -200,8 +202,8 @@ fn do_stats(db: &Arc<state::Database>, channel_id: String) -> types::Response {
     }
 }
 
-pub fn handle_request(db: &Arc<state::Database>, line: String) -> types::Response {
-    println!("incoming request{:?}", line);
+pub fn handle_request(db: &Arc<state::Database>, conf: &config::Config, line: String) -> types::Response {
+    debug!("incoming request: {:?}", line);
     let request = match types::Request::parse(&line) {
         Ok(req) => req,
         Err(e) => return types::Response::Error { message: e },
@@ -222,7 +224,7 @@ pub fn handle_request(db: &Arc<state::Database>, line: String) -> types::Respons
         } => do_update(&db, channel_id, uid, value),
         types::Request::Connect { channel_id } => do_connect(&db, channel_id),
         types::Request::Flush { channel_id } => do_flush(&db, channel_id),
-        types::Request::Backup { channel_id } => do_backup(&db, channel_id),
+        types::Request::Backup { channel_id } => do_backup(&db, &conf, channel_id),
         types::Request::Stats { channel_id } => do_stats(&db, channel_id),
     }
 }

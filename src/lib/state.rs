@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use glob::glob;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{create_dir_all, File};
 use std::result::Result;
 use std::sync::{Arc, Mutex};
 
@@ -26,13 +26,17 @@ pub struct Message {
     // pub data: String,
 }
 
-pub fn create_db() -> Arc<Database> {
+pub fn create_db(data_directory: String) -> Arc<Database> {
+    debug!("Creating database");
     let mut channels = HashMap::new();
 
-    for entry in glob("/home/adam/Projects/merkava/.data/*")
-        .unwrap()
-        .filter_map(Result::ok)
-    {
+    create_dir_all(&data_directory).expect("unable to create data directory");
+
+    debug!("{}", format!("Loading records from {}", data_directory));
+
+    let glob_path = format!("{}/*", data_directory);
+
+    for entry in glob(&glob_path).unwrap().filter_map(Result::ok) {
         let path = entry.as_path();
         let split_path = path.components();
         let channel_id = match split_path.last() {
