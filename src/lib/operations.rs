@@ -171,7 +171,7 @@ fn do_backup(db: &Arc<state::Database>, conf: &config::Config, channel_id: Strin
     let backup_path = conf.get::<String>("persistence.path").unwrap();
     let path = format!("{}/{}", backup_path, channel_id);
     info!("{}", format!("Backing up to {}", path));
-    
+
     match create_dir_all(path.clone()) {
         Err(e) => {
             return types::Response::Error {
@@ -195,6 +195,11 @@ fn do_backup(db: &Arc<state::Database>, conf: &config::Config, channel_id: Strin
 fn do_stats(db: &Arc<state::Database>, channel_id: String) -> types::Response {
     let channels = db.channels.lock().unwrap();
     let _channel = channels.get(&channel_id);
+    if _channel.is_none() {
+        return types::Response::Stats {
+            message: "Messages: -".to_string(),
+        }
+    }
     let channel = _channel.unwrap();
     let data = channel.data.lock().unwrap();
     types::Response::Stats {
