@@ -395,6 +395,40 @@ mod tests {
         assert_eq!(&message[..2], "ER");
     }
 
+    /////////////////
+    // STATS TESTS //
+    /////////////////
+
+    #[test]
+    fn do_stats_empty() {
+        let db = make_db();
+
+        let response = do_stats(&db, String::from("foobar"));
+        let message = response.serialize();
+        assert_eq!(&message[..2], "OK");
+
+        let json_string = &mut message[3..].to_string();
+        json_string.pop();
+        let messages: Value = serde_json::json!(json_string);
+        assert_eq!(messages, String::from("Messages: -"));
+    }
+
+    #[test]
+    fn do_stats_with_messages() {
+        let db = make_db();
+
+        make_pushes(&db, String::from("foobar"), 1);
+
+        let response = do_stats(&db, String::from("foobar"));
+        let message = response.serialize();
+        assert_eq!(&message[..2], "OK");
+
+        let json_string = &mut message[3..].to_string();
+        json_string.pop();
+        let messages: Value = serde_json::json!(json_string);
+        assert_eq!(messages, String::from("Messages: 1"));
+    }
+
     ////////////////////
     // RETRIEVE TESTS //
     ////////////////////
